@@ -137,7 +137,7 @@ pub type TraitObligation<'tcx> = Obligation<'tcx, ty::PolyTraitPredicate<'tcx>>;
 
 // `PredicateObligation` is used a lot. Make sure it doesn't unintentionally get bigger.
 #[cfg(target_arch = "x86_64")]
-static_assert_size!(PredicateObligation<'_>, 112);
+static_assert_size!(PredicateObligation<'_>, 120);
 
 /// The reason why we incurred this obligation; used for error reporting.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -320,7 +320,7 @@ pub struct AssocTypeBoundData {
 
 // `ObligationCauseCode` is used a lot. Make sure it doesn't unintentionally get bigger.
 #[cfg(target_arch = "x86_64")]
-static_assert_size!(ObligationCauseCode<'_>, 32);
+static_assert_size!(ObligationCauseCode<'_>, 40);
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct MatchExpressionArmCause<'tcx> {
@@ -727,7 +727,7 @@ pub fn type_known_to_meet_bound_modulo_regions<'a, 'tcx>(
         infcx.tcx.def_path_str(def_id)
     );
 
-    let trait_ref = ty::TraitRef { def_id, substs: infcx.tcx.mk_substs_trait(ty, &[]) };
+    let trait_ref = ty::TraitRef::new(def_id, infcx.tcx.mk_substs_trait(ty, &[]));
     let obligation = Obligation {
         param_env,
         cause: ObligationCause::misc(span, hir::DUMMY_HIR_ID),

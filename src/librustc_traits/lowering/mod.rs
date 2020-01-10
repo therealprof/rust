@@ -189,7 +189,7 @@ fn program_clauses_for_trait(tcx: TyCtxt<'_>, def_id: DefId) -> Clauses<'_> {
     let bound_vars = InternalSubsts::bound_vars_for_item(tcx, def_id);
 
     // `Self: Trait<P1..Pn>`
-    let trait_pred = ty::TraitPredicate { trait_ref: ty::TraitRef { def_id, substs: bound_vars } };
+    let trait_pred = ty::TraitPredicate { trait_ref: ty::TraitRef::new(def_id, bound_vars) };
 
     // `Implemented(Self: Trait<P1..Pn>)`
     let impl_trait: DomainGoal<'_> = trait_pred.lower();
@@ -413,7 +413,7 @@ pub fn program_clauses_for_associated_type_def(tcx: TyCtxt<'_>, item_id: DefId) 
     };
 
     let trait_bound_vars = InternalSubsts::bound_vars_for_item(tcx, trait_id);
-    let trait_ref = ty::TraitRef { def_id: trait_id, substs: trait_bound_vars };
+    let trait_ref = ty::TraitRef::new(trait_id, trait_bound_vars);
 
     let projection_ty = ty::ProjectionTy::from_ref_and_name(tcx, trait_ref, item.ident);
     let placeholder_ty = tcx.mk_ty(ty::UnnormalizedProjection(projection_ty));

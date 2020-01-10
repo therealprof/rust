@@ -470,10 +470,10 @@ impl<'a, 'b, 'tcx> TypeVerifier<'a, 'b, 'tcx> {
         if place.projection.is_empty() {
             if let PlaceContext::NonMutatingUse(NonMutatingUseContext::Copy) = context {
                 let tcx = self.tcx();
-                let trait_ref = ty::TraitRef {
-                    def_id: tcx.lang_items().copy_trait().unwrap(),
-                    substs: tcx.mk_substs_trait(place_ty.ty, &[]),
-                };
+                let trait_ref = ty::TraitRef::new(
+                    tcx.lang_items().copy_trait().unwrap(),
+                    tcx.mk_substs_trait(place_ty.ty, &[]),
+                );
 
                 // To have a `Copy` operand, the type `T` of the
                 // value must be `Copy`. Note that we prove that `T: Copy`,
@@ -1391,10 +1391,10 @@ impl<'a, 'tcx> TypeChecker<'a, 'tcx> {
 
                 self.check_rvalue(body, rv, location);
                 if !self.tcx().features().unsized_locals {
-                    let trait_ref = ty::TraitRef {
-                        def_id: tcx.lang_items().sized_trait().unwrap(),
-                        substs: tcx.mk_substs_trait(place_ty, &[]),
-                    };
+                    let trait_ref = ty::TraitRef::new(
+                        tcx.lang_items().sized_trait().unwrap(),
+                        tcx.mk_substs_trait(place_ty, &[]),
+                    );
                     self.prove_trait_ref(
                         trait_ref,
                         location.to_locations(),
@@ -1954,10 +1954,10 @@ impl<'a, 'tcx> TypeChecker<'a, 'tcx> {
                     self.ensure_place_sized(ty, span);
                 }
 
-                let trait_ref = ty::TraitRef {
-                    def_id: tcx.lang_items().sized_trait().unwrap(),
-                    substs: tcx.mk_substs_trait(ty, &[]),
-                };
+                let trait_ref = ty::TraitRef::new(
+                    tcx.lang_items().sized_trait().unwrap(),
+                    tcx.mk_substs_trait(ty, &[]),
+                );
 
                 self.prove_trait_ref(
                     trait_ref,
@@ -2054,10 +2054,10 @@ impl<'a, 'tcx> TypeChecker<'a, 'tcx> {
 
                     CastKind::Pointer(PointerCast::Unsize) => {
                         let &ty = ty;
-                        let trait_ref = ty::TraitRef {
-                            def_id: tcx.lang_items().coerce_unsized_trait().unwrap(),
-                            substs: tcx.mk_substs_trait(op.ty(*body, tcx), &[ty.into()]),
-                        };
+                        let trait_ref = ty::TraitRef::new(
+                            tcx.lang_items().coerce_unsized_trait().unwrap(),
+                            tcx.mk_substs_trait(op.ty(*body, tcx), &[ty.into()]),
+                        );
 
                         self.prove_trait_ref(
                             trait_ref,

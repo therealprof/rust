@@ -17,16 +17,15 @@ fn builtin_impl_clause(
 ) -> ProgramClause<'tcx> {
     ProgramClause {
         goal: ty::TraitPredicate {
-            trait_ref: ty::TraitRef { def_id: trait_def_id, substs: tcx.mk_substs_trait(ty, &[]) },
+            trait_ref: ty::TraitRef::new(trait_def_id, tcx.mk_substs_trait(ty, &[])),
         }
         .lower(),
         hypotheses: tcx.mk_goals(
             nested
                 .iter()
                 .cloned()
-                .map(|nested_ty| ty::TraitRef {
-                    def_id: trait_def_id,
-                    substs: tcx.mk_substs_trait(nested_ty.expect_ty(), &[]),
+                .map(|nested_ty| {
+                    ty::TraitRef::new(trait_def_id, tcx.mk_substs_trait(nested_ty.expect_ty(), &[]))
                 })
                 .map(|trait_ref| ty::TraitPredicate { trait_ref })
                 .map(|pred| GoalKind::DomainGoal(pred.lower()))
@@ -76,10 +75,10 @@ crate fn assemble_builtin_unsize_impls<'tcx>(
             // `forall<T> { Implemented([T; N]: Unsize<[T]>). }`
             let clause = ProgramClause {
                 goal: ty::TraitPredicate {
-                    trait_ref: ty::TraitRef {
-                        def_id: unsize_def_id,
-                        substs: tcx.mk_substs_trait(array_ty, &[slice_ty.into()]),
-                    },
+                    trait_ref: ty::TraitRef::new(
+                        unsize_def_id,
+                        tcx.mk_substs_trait(array_ty, &[slice_ty.into()]),
+                    ),
                 }
                 .lower(),
                 hypotheses: ty::List::empty(),

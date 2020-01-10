@@ -53,7 +53,7 @@ crate fn wf_clause_for_slice(tcx: TyCtxt<'_>) -> Clauses<'_> {
         None => return ty::List::empty(),
     };
     let sized_implemented =
-        ty::TraitRef { def_id: sized_trait, substs: tcx.mk_substs_trait(ty, ty::List::empty()) };
+        ty::TraitRef::new(sized_trait, tcx.mk_substs_trait(ty, ty::List::empty()));
     let sized_implemented: DomainGoal<'_> =
         ty::TraitPredicate { trait_ref: sized_implemented }.lower();
 
@@ -80,7 +80,7 @@ crate fn wf_clause_for_array<'tcx>(
         None => return ty::List::empty(),
     };
     let sized_implemented =
-        ty::TraitRef { def_id: sized_trait, substs: tcx.mk_substs_trait(ty, ty::List::empty()) };
+        ty::TraitRef::new(sized_trait, tcx.mk_substs_trait(ty, ty::List::empty()));
     let sized_implemented: DomainGoal<'_> =
         ty::TraitPredicate { trait_ref: sized_implemented }.lower();
 
@@ -108,9 +108,8 @@ crate fn wf_clause_for_tuple(tcx: TyCtxt<'_>, arity: usize) -> Clauses<'_> {
     // hypotheses is actually empty.
     let sized_implemented = type_list[0..std::cmp::max(arity, 1) - 1]
         .iter()
-        .map(|ty| ty::TraitRef {
-            def_id: sized_trait,
-            substs: tcx.mk_substs_trait(ty.expect_ty(), ty::List::empty()),
+        .map(|ty| {
+            ty::TraitRef::new(sized_trait, tcx.mk_substs_trait(ty.expect_ty(), ty::List::empty()))
         })
         .map(|trait_ref| ty::TraitPredicate { trait_ref })
         .map(|predicate| predicate.lower());

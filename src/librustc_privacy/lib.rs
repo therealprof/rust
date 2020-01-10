@@ -84,7 +84,7 @@ where
     V: DefIdVisitor<'tcx> + ?Sized,
 {
     fn visit_trait(&mut self, trait_ref: TraitRef<'tcx>) -> bool {
-        let TraitRef { def_id, substs } = trait_ref;
+        let TraitRef { def_id, substs, maybe_const: _ } = trait_ref;
         self.def_id_visitor.visit_def_id(def_id, "trait", &trait_ref.print_only_trait_path())
             || (!self.def_id_visitor.shallow() && substs.visit_with(self))
     }

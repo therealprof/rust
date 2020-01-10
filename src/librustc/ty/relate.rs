@@ -287,7 +287,7 @@ impl<'tcx> Relate<'tcx> for ty::TraitRef<'tcx> {
             Err(TypeError::Traits(expected_found(relation, &a.def_id, &b.def_id)))
         } else {
             let substs = relate_substs(relation, None, a.substs, b.substs)?;
-            Ok(ty::TraitRef { def_id: a.def_id, substs: substs })
+            Ok(ty::TraitRef::new(a.def_id, substs))
         }
     }
 }

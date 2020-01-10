@@ -392,7 +392,7 @@ impl<'tcx, I: Idx, T: Lift<'tcx>> Lift<'tcx> for IndexVec<I, T> {
 impl<'a, 'tcx> Lift<'tcx> for ty::TraitRef<'a> {
     type Lifted = ty::TraitRef<'tcx>;
     fn lift_to_tcx(&self, tcx: TyCtxt<'tcx>) -> Option<Self::Lifted> {
-        tcx.lift(&self.substs).map(|substs| ty::TraitRef { def_id: self.def_id, substs })
+        tcx.lift(&self.substs).map(|substs| ty::TraitRef::new(self.def_id, substs))
     }
 }
 

@@ -374,10 +374,10 @@ impl<'a, 'tcx> WfPredicates<'a, 'tcx> {
     fn require_sized(&mut self, subty: Ty<'tcx>, cause: traits::ObligationCauseCode<'tcx>) {
         if !subty.has_escaping_bound_vars() {
             let cause = self.cause(cause);
-            let trait_ref = ty::TraitRef {
-                def_id: self.infcx.tcx.require_lang_item(lang_items::SizedTraitLangItem, None),
-                substs: self.infcx.tcx.mk_substs_trait(subty, &[]),
-            };
+            let trait_ref = ty::TraitRef::new(
+                self.infcx.tcx.require_lang_item(lang_items::SizedTraitLangItem, None),
+                self.infcx.tcx.mk_substs_trait(subty, &[]),
+            );
             self.out.push(traits::Obligation::new(cause, self.param_env, trait_ref.to_predicate()));
         }
     }
