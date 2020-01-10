@@ -1977,13 +1977,11 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
         // ::std::future::Future<future_params>
         let future_path =
             self.std_path(span, &[sym::future, sym::Future], Some(future_params), false);
+        let future_trait_ref =
+            hir::TraitRef { path: future_path, hir_ref_id: self.next_id(), constness: None };
 
         hir::GenericBound::Trait(
-            hir::PolyTraitRef {
-                trait_ref: hir::TraitRef { path: future_path, hir_ref_id: self.next_id() },
-                bound_generic_params: &[],
-                span,
-            },
+            hir::PolyTraitRef { trait_ref: future_trait_ref, bound_generic_params: &[], span },
             hir::TraitBoundModifier::None,
         )
     }
@@ -2149,7 +2147,8 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
             hir::QPath::Resolved(None, path) => path,
             qpath => bug!("lower_trait_ref: unexpected QPath `{:?}`", qpath),
         };
-        hir::TraitRef { path, hir_ref_id: self.lower_node_id(p.ref_id) }
+
+        hir::TraitRef { path, hir_ref_id: self.lower_node_id(p.ref_id), constness: p.constness }
     }
 
     fn lower_poly_trait_ref(
@@ -2463,8 +2462,8 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
                     Res::Def(DefKind::Trait, _) | Res::Def(DefKind::TraitAlias, _) => {
                         let principal = hir::PolyTraitRef {
                             bound_generic_params: &[],
-                            trait_ref: hir::TraitRef { path, hir_ref_id: hir_id },
                             span,
+                            trait_ref: hir::TraitRef { path, hir_ref_id: hir_id, constness: None },
                         };
 
                         // The original ID is taken by the `PolyTraitRef`,

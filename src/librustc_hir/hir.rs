@@ -2233,6 +2233,8 @@ pub struct TraitRef<'hir> {
     // Don't hash the `ref_id`. It is tracked via the thing it is used to access.
     #[stable_hasher(ignore)]
     pub hir_ref_id: HirId,
+
+    pub constness: Option<Constness>,
 }
 
 impl TraitRef<'_> {
@@ -2246,6 +2248,10 @@ impl TraitRef<'_> {
             }
             _ => unreachable!(),
         }
+    }
+
+    pub fn is_maybe_const(&self) -> bool {
+        self.constness == Some(Constness::NotConst)
     }
 }
 
