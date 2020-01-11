@@ -33,6 +33,13 @@ pub fn is_min_const_fn(tcx: TyCtxt<'tcx>, def_id: DefId, body: &'a Body<'tcx>) -
                     }
                     match pred.skip_binder().self_ty().kind {
                         ty::Param(ref p) => {
+                            // Allow `T: ?const Trait`
+                            if pred.skip_binder().trait_ref.maybe_const
+                                && feature_allowed(tcx, def_id, sym::const_trait_bound_opt_out)
+                            {
+                                continue;
+                            }
+
                             let generics = tcx.generics_of(current);
                             let def = generics.type_param(p, tcx);
                             let span = tcx.def_span(def.def_id);

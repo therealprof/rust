@@ -2157,7 +2157,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
         mut itctx: ImplTraitContext<'_, 'hir>,
     ) -> hir::PolyTraitRef<'hir> {
         if p.trait_ref.constness.is_some() {
-            self.diagnostic().span_err(p.span, "`?const` on trait bounds is not yet implemented");
+            // self.diagnostic().span_err(p.span, "`?const` on trait bounds is not yet implemented");
         }
 
         let bound_generic_params = self.lower_generic_params(
