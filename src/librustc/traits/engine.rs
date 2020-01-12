@@ -26,7 +26,7 @@ pub trait TraitEngine<'tcx>: 'tcx {
         def_id: DefId,
         cause: ObligationCause<'tcx>,
     ) {
-        let trait_ref = ty::TraitRef { def_id, substs: infcx.tcx.mk_substs_trait(ty, &[]) };
+        let trait_ref = ty::TraitRef::new(def_id, infcx.tcx.mk_substs_trait(ty, &[]));
         self.register_predicate_obligation(
             infcx,
             Obligation {

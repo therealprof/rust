@@ -40,10 +40,8 @@ impl<'a, 'tcx> AutoTraitFinder<'a, 'tcx> {
         let auto_traits = self.cx.auto_traits.iter().cloned();
         auto_traits
             .filter_map(|trait_def_id| {
-                let trait_ref = ty::TraitRef {
-                    def_id: trait_def_id,
-                    substs: self.cx.tcx.mk_substs_trait(ty, &[]),
-                };
+                let trait_ref =
+                    ty::TraitRef::new(trait_def_id, self.cx.tcx.mk_substs_trait(ty, &[]));
                 if !self.cx.generated_synthetics.borrow_mut().insert((ty, trait_def_id)) {
                     debug!("get_auto_trait_impl_for({:?}): already generated, aborting", trait_ref);
                     return None;

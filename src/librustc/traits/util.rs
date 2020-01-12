@@ -557,8 +557,7 @@ pub fn predicate_for_trait_def(
     self_ty: Ty<'tcx>,
     params: &[GenericArg<'tcx>],
 ) -> PredicateObligation<'tcx> {
-    let trait_ref =
-        ty::TraitRef { def_id: trait_def_id, substs: tcx.mk_substs_trait(self_ty, params) };
+    let trait_ref = ty::TraitRef::new(trait_def_id, tcx.mk_substs_trait(self_ty, params));
     predicate_for_trait_ref(cause, param_env, trait_ref, recursion_depth)
 }
 
@@ -629,10 +628,8 @@ pub fn closure_trait_ref_and_return_type(
         TupleArgumentsFlag::No => sig.skip_binder().inputs()[0],
         TupleArgumentsFlag::Yes => tcx.intern_tup(sig.skip_binder().inputs()),
     };
-    let trait_ref = ty::TraitRef {
-        def_id: fn_trait_def_id,
-        substs: tcx.mk_substs_trait(self_ty, &[arguments_tuple.into()]),
-    };
+    let trait_ref =
+        ty::TraitRef::new(fn_trait_def_id, tcx.mk_substs_trait(self_ty, &[arguments_tuple.into()]));
     ty::Binder::bind((trait_ref, sig.skip_binder().output()))
 }
 
@@ -642,8 +639,7 @@ pub fn generator_trait_ref_and_outputs(
     self_ty: Ty<'tcx>,
     sig: ty::PolyGenSig<'tcx>,
 ) -> ty::Binder<(ty::TraitRef<'tcx>, Ty<'tcx>, Ty<'tcx>)> {
-    let trait_ref =
-        ty::TraitRef { def_id: fn_trait_def_id, substs: tcx.mk_substs_trait(self_ty, &[]) };
+    let trait_ref = ty::TraitRef::new(fn_trait_def_id, tcx.mk_substs_trait(self_ty, &[]));
     ty::Binder::bind((trait_ref, sig.skip_binder().yield_ty, sig.skip_binder().return_ty))
 }
 

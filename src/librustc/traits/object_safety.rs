@@ -579,10 +579,10 @@ fn receiver_is_dispatchable<'tcx>(
         let mut param_env = tcx.param_env(method.def_id);
 
         // Self: Unsize<U>
-        let unsize_predicate = ty::TraitRef {
-            def_id: unsize_did,
-            substs: tcx.mk_substs_trait(tcx.types.self_param, &[unsized_self_ty.into()]),
-        }
+        let unsize_predicate = ty::TraitRef::new(
+            unsize_did,
+            tcx.mk_substs_trait(tcx.types.self_param, &[unsized_self_ty.into()]),
+        )
         .to_predicate();
 
         // U: Trait<Arg1, ..., ArgN>
@@ -596,7 +596,7 @@ fn receiver_is_dispatchable<'tcx>(
                     }
                 });
 
-            ty::TraitRef { def_id: unsize_did, substs }.to_predicate()
+            ty::TraitRef::new(unsize_did, substs).to_predicate()
         };
 
         let caller_bounds: Vec<Predicate<'tcx>> = param_env
@@ -614,10 +614,10 @@ fn receiver_is_dispatchable<'tcx>(
 
     // Receiver: DispatchFromDyn<Receiver[Self => U]>
     let obligation = {
-        let predicate = ty::TraitRef {
-            def_id: dispatch_from_dyn_did,
-            substs: tcx.mk_substs_trait(receiver_ty, &[unsized_receiver_ty.into()]),
-        }
+        let predicate = ty::TraitRef::new(
+            dispatch_from_dyn_did,
+            tcx.mk_substs_trait(receiver_ty, &[unsized_receiver_ty.into()]),
+        )
         .to_predicate();
 
         Obligation::new(ObligationCause::dummy(), param_env, predicate)

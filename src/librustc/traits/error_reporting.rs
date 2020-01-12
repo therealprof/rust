@@ -1340,8 +1340,7 @@ impl<'a, 'tcx> InferCtxt<'a, 'tcx> {
         cause: ObligationCause<'tcx>,
         param_env: ty::ParamEnv<'tcx>,
     ) -> PredicateObligation<'tcx> {
-        let new_trait_ref =
-            ty::TraitRef { def_id, substs: self.tcx.mk_substs_trait(output_ty, &[]) };
+        let new_trait_ref = ty::TraitRef::new(def_id, self.tcx.mk_substs_trait(output_ty, &[]));
         Obligation::new(cause, param_env, new_trait_ref.to_predicate())
     }
 

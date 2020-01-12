@@ -2,6 +2,8 @@
 //! The main routine here is `ast_ty_to_ty()`; each use is parameterized by an
 //! instance of `AstConv`.
 
+// ignore-tidy-filelength
+
 use crate::collect::PlaceholderHirTyCollector;
 use crate::lint;
 use crate::middle::lang_items::SizedTraitLangItem;
@@ -902,6 +904,12 @@ impl<'o, 'tcx> dyn AstConv<'tcx> + 'o {
         trait_ref: &hir::TraitRef<'_>,
         self_ty: Ty<'tcx>,
     ) -> ty::TraitRef<'tcx> {
+        debug_assert!(
+            trait_ref.constness.is_none(),
+            "`instantiate_mono_trait_ref` is only used to lower `impl Trait` for now and \
+            must be modified to support `?const`"
+        );
+
         self.prohibit_generics(trait_ref.path.segments.split_last().unwrap().1);
 
         self.ast_path_to_mono_trait_ref(
@@ -943,7 +951,11 @@ impl<'o, 'tcx> dyn AstConv<'tcx> + 'o {
             self_ty,
             trait_ref.path.segments.last().unwrap(),
         );
-        let poly_trait_ref = ty::Binder::bind(ty::TraitRef::new(trait_def_id, substs));
+        let poly_trait_ref = ty::Binder::bind(ty::TraitRef::new_maybe_const(
+            trait_def_id,
+            substs,
+            trait_ref.is_maybe_const(),
+        ));
 
         bounds.trait_bounds.push((poly_trait_ref, span));
 
@@ -2961,10 +2973,8 @@ impl<'tcx> Bounds<'tcx> {
         // If it could be sized, and is, add the `Sized` predicate.
         let sized_predicate = self.implicitly_sized.and_then(|span| {
             tcx.lang_items().sized_trait().map(|sized| {
-                let trait_ref = ty::Binder::bind(ty::TraitRef {
-                    def_id: sized,
-                    substs: tcx.mk_substs_trait(param_ty, &[]),
-                });
+                let trait_ref =
+                    ty::Binder::bind(ty::TraitRef::new(sized, tcx.mk_substs_trait(param_ty, &[])));
                 (trait_ref.to_predicate(), span)
             })
         });

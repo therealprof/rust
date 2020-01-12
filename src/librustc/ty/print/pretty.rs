@@ -1749,7 +1749,13 @@ define_print_and_forward_display! {
     }
 
     ty::TraitRef<'tcx> {
-        p!(write("<{} as {}>", self.self_ty(), self.print_only_trait_path()))
+        p!(
+            write("<{} as {}{}>",
+                self.self_ty(),
+                if self.maybe_const { "?const " } else { "" },
+                self.print_only_trait_path()
+            )
+        )
     }
 
     TraitRefPrintOnlyTraitPath<'tcx> {

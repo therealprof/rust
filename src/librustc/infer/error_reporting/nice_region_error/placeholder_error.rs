@@ -215,14 +215,10 @@ impl NiceRegionError<'me, 'tcx> {
             false
         };
 
-        let expected_trait_ref = self.infcx.resolve_vars_if_possible(&ty::TraitRef {
-            def_id: trait_def_id,
-            substs: expected_substs,
-        });
-        let actual_trait_ref = self.infcx.resolve_vars_if_possible(&ty::TraitRef {
-            def_id: trait_def_id,
-            substs: actual_substs,
-        });
+        let expected_trait_ref =
+            self.infcx.resolve_vars_if_possible(&ty::TraitRef::new(trait_def_id, expected_substs));
+        let actual_trait_ref =
+            self.infcx.resolve_vars_if_possible(&ty::TraitRef::new(trait_def_id, actual_substs));
 
         // Search the expected and actual trait references to see (a)
         // whether the sub/sup placeholders appear in them (sometimes

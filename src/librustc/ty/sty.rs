@@ -670,8 +670,7 @@ impl<'tcx> Binder<ExistentialPredicate<'tcx>> {
                 ty::Predicate::Projection(Binder(p.with_self_ty(tcx, self_ty)))
             }
             ExistentialPredicate::AutoTrait(did) => {
-                let trait_ref =
-                    Binder(ty::TraitRef { def_id: did, substs: tcx.mk_substs_trait(self_ty, &[]) });
+                let trait_ref = Binder(ty::TraitRef::new(did, tcx.mk_substs_trait(self_ty, &[])));
                 trait_ref.to_predicate()
             }
         }
@@ -784,17 +783,32 @@ impl<'tcx> Binder<&'tcx List<ExistentialPredicate<'tcx>>> {
 pub struct TraitRef<'tcx> {
     pub def_id: DefId,
     pub substs: SubstsRef<'tcx>,
+
+    /// Whether the reference to the trait is prefixed by `?const`.
+    //
+    // FIXME(ecstaticmorse): This field causes `TraitRef` to increase in size by an entire machine
+    // word, despite it never being used during trait solving. Try implementing the checks in
+    // `qualify_min_const_fn` using `hir::TraitRef` instead.
+    pub maybe_const: bool,
 }
 
 impl<'tcx> TraitRef<'tcx> {
     pub fn new(def_id: DefId, substs: SubstsRef<'tcx>) -> TraitRef<'tcx> {
-        TraitRef { def_id, substs }
+        TraitRef::new_maybe_const(def_id, substs, false)
+    }
+
+    pub fn new_maybe_const(
+        def_id: DefId,
+        substs: SubstsRef<'tcx>,
+        maybe_const: bool,
+    ) -> TraitRef<'tcx> {
+        TraitRef { def_id, substs, maybe_const }
     }
 
     /// Returns a `TraitRef` of the form `P0: Foo<P1..Pn>` where `Pi`
     /// are the parameters defined on trait.
     pub fn identity(tcx: TyCtxt<'tcx>, def_id: DefId) -> TraitRef<'tcx> {
-        TraitRef { def_id, substs: InternalSubsts::identity_for_item(tcx, def_id) }
+        TraitRef::new(def_id, InternalSubsts::identity_for_item(tcx, def_id))
     }
 
     #[inline]
@@ -817,7 +831,7 @@ impl<'tcx> TraitRef<'tcx> {
     ) -> ty::TraitRef<'tcx> {
         let defs = tcx.generics_of(trait_id);
 
-        ty::TraitRef { def_id: trait_id, substs: tcx.intern_substs(&substs[..defs.params.len()]) }
+        ty::TraitRef::new(trait_id, tcx.intern_substs(&substs[..defs.params.len()]))
     }
 }
 
@@ -882,7 +896,7 @@ impl<'tcx> ExistentialTraitRef<'tcx> {
         // otherwise the escaping vars would be captured by the binder
         // debug_assert!(!self_ty.has_escaping_bound_vars());
 
-        ty::TraitRef { def_id: self.def_id, substs: tcx.mk_substs_trait(self_ty, self.substs) }
+        ty::TraitRef::new(self.def_id, tcx.mk_substs_trait(self_ty, self.substs))
     }
 }
 
@@ -1058,7 +1072,7 @@ impl<'tcx> ProjectionTy<'tcx> {
     /// then this function would return a `T: Iterator` trait reference.
     pub fn trait_ref(&self, tcx: TyCtxt<'tcx>) -> ty::TraitRef<'tcx> {
         let def_id = tcx.associated_item(self.item_def_id).container.id();
-        ty::TraitRef { def_id, substs: self.substs.truncate_to(tcx, tcx.generics_of(def_id)) }
+        ty::TraitRef::new(def_id, self.substs.truncate_to(tcx, tcx.generics_of(def_id)))
     }
 
     pub fn self_ty(&self) -> Ty<'tcx> {

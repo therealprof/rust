@@ -2467,11 +2467,9 @@ impl<'tcx> AdtDef {
                     Some(x) => x,
                     _ => return vec![ty],
                 };
-                let sized_predicate = Binder::dummy(TraitRef {
-                    def_id: sized_trait,
-                    substs: tcx.mk_substs_trait(ty, &[]),
-                })
-                .to_predicate();
+                let sized_predicate =
+                    Binder::dummy(TraitRef::new(sized_trait, tcx.mk_substs_trait(ty, &[])))
+                        .to_predicate();
                 let predicates = tcx.predicates_of(self.did).predicates;
                 if predicates.iter().any(|(p, _)| *p == sized_predicate) {
                     vec![]

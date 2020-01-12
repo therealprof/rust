@@ -950,10 +950,8 @@ fn receiver_is_implemented(
     cause: ObligationCause<'tcx>,
     receiver_ty: Ty<'tcx>,
 ) -> bool {
-    let trait_ref = ty::TraitRef {
-        def_id: receiver_trait_def_id,
-        substs: fcx.tcx.mk_substs_trait(receiver_ty, &[]),
-    };
+    let trait_ref =
+        ty::TraitRef::new(receiver_trait_def_id, fcx.tcx.mk_substs_trait(receiver_ty, &[]));
 
     let obligation = traits::Obligation::new(cause, fcx.param_env, trait_ref.to_predicate());
 

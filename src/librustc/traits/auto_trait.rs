@@ -83,7 +83,7 @@ impl<'tcx> AutoTraitFinder<'tcx> {
     ) -> AutoTraitResult<A> {
         let tcx = self.tcx;
 
-        let trait_ref = ty::TraitRef { def_id: trait_did, substs: tcx.mk_substs_trait(ty, &[]) };
+        let trait_ref = ty::TraitRef::new(trait_did, tcx.mk_substs_trait(ty, &[]));
 
         let trait_pred = ty::Binder::bind(trait_ref);
 
@@ -271,10 +271,7 @@ impl AutoTraitFinder<'tcx> {
         let mut already_visited = FxHashSet::default();
         let mut predicates = VecDeque::new();
         predicates.push_back(ty::Binder::bind(ty::TraitPredicate {
-            trait_ref: ty::TraitRef {
-                def_id: trait_did,
-                substs: infcx.tcx.mk_substs_trait(ty, &[]),
-            },
+            trait_ref: ty::TraitRef::new(trait_did, infcx.tcx.mk_substs_trait(ty, &[])),
         }));
 
         let mut computed_preds: FxHashSet<_> = param_env.caller_bounds.iter().cloned().collect();
